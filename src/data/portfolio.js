@@ -1,0 +1,140 @@
+export const portfolio = {
+  name: "Asheed Eliyangod",
+  title: "Game Developer | UI/UX Designer | 3D & Interactive Experience Creator",
+  tagline: "Building immersive digital experiences, interactive worlds, and modern game interfaces.",
+
+  about: {
+    title: "About",
+    kicker: "Playable portfolio world",
+    body: "I am a passionate game developer and UI/UX designer focused on creating immersive interactive experiences, modern interfaces, and visually engaging digital products. I enjoy working with Unity, web technologies, 3D workflows, and creative development tools to build projects that combine performance, creativity, and user experience.\n\nI continuously explore new technologies including AI-assisted workflows, game systems, cinematic web experiences, and responsive UI design. My goal is to create projects that feel both visually impressive and highly interactive.",
+    stats: [
+      { label: "Years Exploring", value: 3 },
+      { label: "Projects Built",  value: 10 },
+      { label: "Tools Mastered", value: 15 },
+    ],
+    goals: [
+      "Cinematic web experiences",
+      "Game-feel interaction",
+      "AI-assisted dev workflows",
+      "3D & interactive design",
+    ],
+    timeline: [
+      {
+        year: "2024–Present",
+        role: "Freelance Game Developer & UI/UX Designer",
+        desc: "Building interactive web experiences, game prototypes, and modern UI systems.",
+      },
+      {
+        year: "2023",
+        role: "UI/UX Mastery Workshop",
+        desc: "Completed intensive UI/UX training at Webeaz Technologies Pvt. Ltd.",
+      },
+      {
+        year: "2022–2023",
+        role: "Self-directed Learning",
+        desc: "Deep dived into Unity, C#, Three.js, Blender, and game design fundamentals.",
+      },
+    ],
+  },
+
+  skills: {
+    technical: [
+      { name: "Unity Engine",             level: 85 },
+      { name: "C#",                        level: 80 },
+      { name: "UI/UX Design",              level: 90 },
+      { name: "Game Design",               level: 82 },
+      { name: "HTML",                      level: 92 },
+      { name: "CSS",                       level: 90 },
+      { name: "JavaScript",               level: 85 },
+      { name: "Responsive Web Design",    level: 88 },
+      { name: "3D Modeling Workflow",     level: 70 },
+      { name: "Blender Basics",           level: 65 },
+      { name: "GitHub",                   level: 80 },
+      { name: "Interactive Web",          level: 88 },
+      { name: "AI Tools for Development", level: 78 },
+      { name: "Game Optimization",        level: 74 },
+      { name: "Unreal Engine Basics",     level: 55 },
+    ],
+    tools: [
+      { name: "Unity",            icon: "🎮" },
+      { name: "Blender",          icon: "🟠" },
+      { name: "VS Code",          icon: "💙" },
+      { name: "Figma",            icon: "🎨" },
+      { name: "GitHub",           icon: "🐙" },
+      { name: "Mixamo",           icon: "🤖" },
+      { name: "Canva",            icon: "✏️" },
+      { name: "Adobe Photoshop",  icon: "🖼️" },
+      { name: "Vercel",           icon: "▲" },
+    ],
+  },
+
+  projects: [
+    {
+      id: "ship-exploration",
+      title: "Interactive Ship Exploration",
+      role: "Three.js · WebGL · JavaScript",
+      color: "#65d6ff",
+      text: "A cinematic interactive web experience where users control a ship sailing through a vast ocean environment using keyboard controls on desktop and joystick controls on mobile. The experience focuses on immersion, realistic atmosphere, smooth controls, and dynamic environmental visuals.",
+      tags: ["Three.js", "WebGL", "JavaScript", "3D Assets"],
+      github: "https://github.com/AsheedEliyangod",
+      demo: "#",
+    },
+    {
+      id: "astrocade",
+      title: "Astrocade Game Project",
+      role: "HTML5 · JavaScript · Game Systems",
+      color: "#ffce6a",
+      text: "A stylized 2D game project focused on gameplay systems, attractive visuals, smooth animations, and interactive player mechanics.",
+      tags: ["HTML5", "JavaScript", "Game Logic", "Canvas"],
+      github: "https://github.com/AsheedEliyangod",
+      demo: "https://asheedeliyangod.itch.io",
+    },
+    {
+      id: "newspaper-ui",
+      title: "UI/UX Newspaper Concept",
+      role: "UI/UX · Responsive Design · Frontend",
+      color: "#b4a7ff",
+      text: "A visually modern newspaper-style website redesign focused on readability, responsive layouts, and user-friendly interface systems.",
+      tags: ["UI/UX", "Responsive", "Frontend", "Design"],
+      github: "https://github.com/AsheedEliyangod",
+      demo: "#",
+    },
+    {
+      id: "3d-characters",
+      title: "3D Character & Environment",
+      role: "Blender · Mixamo · 3D Workflow",
+      color: "#7dffbe",
+      text: "High-quality 3D character workflow experiments involving realistic character concepts, environment composition, animation pipelines, and game-ready assets.",
+      tags: ["Blender", "Mixamo", "3D", "Animation"],
+      github: "https://github.com/AsheedEliyangod",
+      demo: "#",
+    },
+  ],
+
+  resume: {
+    title: "Resume",
+    body: "Download a concise resume covering game development, UI/UX design, interactive web, 3D workflows, and creative development.",
+    url: "/resume.pdf",
+    certifications: [
+      {
+        title: "UI/UX Mastery Workshop",
+        issuer: "Webeaz Technologies Pvt. Ltd.",
+        year: "2023",
+      },
+    ],
+    activities: [
+      "Participated in Global Game Jam events",
+      "Organized gaming & esports events",
+      "Built interactive web and game experiences",
+      "Exploring AI-assisted game development workflows",
+      "Active open-source contributor on GitHub",
+    ],
+  },
+
+  contact: [
+    { label: "GitHub",    icon: "github",   href: "https://github.com/AsheedEliyangod" },
+    { label: "itch.io",   icon: "itch",     href: "https://asheedeliyangod.itch.io" },
+    { label: "LinkedIn",  icon: "linkedin",  href: "https://www.linkedin.com/in/asheed-eliyangod-79802b350/" },
+    { label: "Email",     icon: "email",    href: "mailto:asheedeliyangod@gmail.com" },
+  ],
+};

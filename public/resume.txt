@@ -1,0 +1,67 @@
+ASHEED ELIYANGOD
+Game Developer | UI/UX Designer | 3D & Interactive Experience Creator
+
+GitHub  : github.com/AsheedEliyangod
+itch.io : asheedeliyangod.itch.io
+LinkedIn: linkedin.com/in/asheedeliyangod
+Email   : asheedeliyangod@gmail.com
+
+────────────────────────────────────────
+ABOUT
+────────────────────────────────────────
+Passionate game developer and UI/UX designer focused on creating immersive
+interactive experiences, modern interfaces, and visually engaging digital
+products. Working with Unity, web technologies, 3D workflows, and creative
+development tools to build projects that combine performance, creativity,
+and user experience.
+
+────────────────────────────────────────
+TECHNICAL SKILLS
+────────────────────────────────────────
+Unity Engine · C# · UI/UX Design · Game Design · HTML · CSS · JavaScript
+Responsive Web Design · 3D Modeling Workflow · Blender · GitHub
+Interactive Web Experiences · AI Tools for Development
+Game Optimization · Unreal Engine Basics
+
+────────────────────────────────────────
+TOOLS & SOFTWARE
+────────────────────────────────────────
+Unity · Blender · VS Code · Figma · GitHub · Mixamo · Canva
+Adobe Photoshop · Vercel
+
+────────────────────────────────────────
+PROJECTS
+────────────────────────────────────────
+Interactive Ship Exploration Experience
+  A cinematic interactive web experience — keyboard & joystick ship controls,
+  real-time ocean, dynamic environment.
+  Tech: Three.js · WebGL · JavaScript · 3D Assets
+
+Astrocade Game Project
+  Stylized 2D game with gameplay systems, smooth animations, interactive
+  player mechanics.
+  Tech: HTML5 · JavaScript · Game Logic Systems
+  Play: asheedeliyangod.itch.io
+
+UI/UX Newspaper Website Concept
+  Modern newspaper redesign — readability, responsive layouts, UX.
+  Tech: UI/UX · Responsive Design · Frontend Development
+
+3D Character & Environment Experiments
+  Realistic 3D character concepts, environment composition, animation
+  pipelines, game-ready assets.
+  Tech: Blender · Mixamo · 3D Workflow
+
+────────────────────────────────────────
+CERTIFICATIONS
+────────────────────────────────────────
+UI/UX Mastery Workshop — Webeaz Technologies Pvt. Ltd. (2023)
+
+────────────────────────────────────────
+ACTIVITIES
+────────────────────────────────────────
+· Participated in Global Game Jam events
+· Organized gaming & esports events
+· Built interactive web and game experiences
+· Exploring AI-assisted game development workflows
+· Active open-source contributor on GitHub
