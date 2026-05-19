@@ -1106,6 +1106,30 @@ canvas {
   background: rgba(100, 210, 255, 0.28);
 }
 
+/* Panel open button — purple/violet accent */
+.mobile-panel-btn {
+  background: rgba(167, 139, 250, 0.13);
+  border-color: rgba(167, 139, 250, 0.52);
+  animation-name: mobile-panel-pulse;
+}
+.mobile-panel-btn:active {
+  background: rgba(167, 139, 250, 0.28);
+}
+
+@keyframes mobile-panel-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 18px rgba(167, 139, 250, 0.25),
+      0 4px 22px rgba(0, 0, 0, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 36px rgba(167, 139, 250, 0.6),
+      0 0 12px rgba(167, 139, 250, 0.4),
+      0 4px 22px rgba(0, 0, 0, 0.45);
+  }
+}
+
 @keyframes mobile-dock-pulse {
   0%, 100% {
     box-shadow:

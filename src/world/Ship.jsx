@@ -179,7 +179,7 @@ export function Ship() {
   useFrame(({ clock }, delta) => {
     const state = ship.current;
     const t = clock.elapsedTime;
-    const y = waveHeight(state.position.x, state.position.z, t) + 0.42;
+    const y = waveHeight(state.position.x, state.position.z, t) - 0.22;
     const speed = Math.min(Math.abs(state.speed || 0) / 3.35, 1);
     const targetLean = -(state.turnInput || 0) * (0.08 + speed * 0.13);
     const targetPitch = -(state.throttle || 0) * 0.045 + Math.sin(t * 1.35) * 0.018;

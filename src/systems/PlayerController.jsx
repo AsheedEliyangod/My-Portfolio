@@ -37,7 +37,9 @@ export function PlayerController() {
     setNearDock,
     currentIsland,
     setCurrentIsland,
-    mobileDock
+    mobileDock,
+    mobilePanel,
+    setNearPanel
   } = useGame();
 
   const velocity = useRef(new THREE.Vector2());
@@ -138,11 +140,14 @@ export function PlayerController() {
 
     if (nearPanel && !nearDock) {
       setHint(`Press E to open ${currentIsland.label}`);
-      if (!activePanel && keys.KeyE) {
+      setNearPanel(true);
+      if (!activePanel && (keys.KeyE || mobilePanel.current.triggered)) {
         openPanel(currentIsland.id);
         keys.KeyE = false;
+        mobilePanel.current.triggered = false;
       }
     } else if (nearDock) {
+      setNearPanel(false);
       setHint("Press E to board ship");
       if (keys.KeyE || mobileDock.current.triggered) {
         setMode("ship");
@@ -154,6 +159,7 @@ export function PlayerController() {
         mobileDock.current.triggered = false;
       }
     } else {
+      setNearPanel(false);
       setHint(`Explore the ${currentIsland.label} island`);
     }
   });

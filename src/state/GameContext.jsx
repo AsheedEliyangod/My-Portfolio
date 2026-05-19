@@ -6,6 +6,7 @@ const GameContext = createContext(null);
 export function GameProvider({ children }) {
   const [mode, setMode] = useState("ship");
   const [nearDock, setNearDock] = useState(false);
+  const [nearPanel, setNearPanel] = useState(false);
   const [activePanel, setActivePanel] = useState(null);
   const [hint, setHint] = useState("Sail toward an island");
   // Which island the player is currently walking on (null = on ship)
@@ -32,6 +33,10 @@ export function GameProvider({ children }) {
   const mobileDock = useRef({ triggered: false });
   const triggerMobileDock = useCallback(() => { mobileDock.current.triggered = true; }, []);
 
+  // Mobile panel-open trigger
+  const mobilePanel = useRef({ triggered: false });
+  const triggerMobilePanel = useCallback(() => { mobilePanel.current.triggered = true; }, []);
+
   const openPanel  = useCallback((panel) => setActivePanel(panel), []);
   const closePanel = useCallback(() => setActivePanel(null), []);
   const setMobileInput = useCallback((mobile) => { input.current.mobile = mobile; }, []);
@@ -41,15 +46,17 @@ export function GameProvider({ children }) {
     () => ({
       mode, setMode,
       nearDock, setNearDock,
+      nearPanel, setNearPanel,
       hint, setHint,
       activePanel, openPanel, closePanel,
       currentIsland, setCurrentIsland,
       ship, player, camera, input,
       setMobileInput, setTouchLook,
-      mobileDock, triggerMobileDock
+      mobileDock, triggerMobileDock,
+      mobilePanel, triggerMobilePanel
     }),
-    [activePanel, closePanel, currentIsland, hint, mode, nearDock,
-     openPanel, setMobileInput, setTouchLook, triggerMobileDock]
+    [activePanel, closePanel, currentIsland, hint, mode, nearDock, nearPanel,
+     openPanel, setMobileInput, setTouchLook, triggerMobileDock, triggerMobilePanel]
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

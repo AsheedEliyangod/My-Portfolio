@@ -27,11 +27,25 @@ const SOCIAL_SVGS = {
 };
 
 export function HUD() {
-  const { hint, mode, nearDock, triggerMobileDock } = useGame();
+  const {
+    hint,
+    mode,
+    nearDock,
+    nearPanel,
+    activePanel,
+    currentIsland,
+    triggerMobileDock,
+    triggerMobilePanel
+  } = useGame();
   const isPhone = useMemo(() => isPhoneDevice(), []);
+
+  // Which mobile action button to show (mutually exclusive states)
+  const showDockBtn   = isPhone && nearDock  && !activePanel;
+  const showPanelBtn  = isPhone && nearPanel && !activePanel && mode === "walk";
 
   return (
     <div className="hud-root pointer-events-none absolute inset-0 z-20">
+
       {/* Top-left: name watermark */}
       <div className="pointer-events-auto absolute left-4 top-4">
         <div className="hud-nametag">
@@ -47,15 +61,15 @@ export function HUD() {
         </div>
       </div>
 
-      {/* Bottom-center: hint (PC only) */}
-      {!isPhone && (
+      {/* ── PC hint text — hidden when panel is open ─────────────────────── */}
+      {!isPhone && !activePanel && (
         <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2">
           <div className="hud-hint" aria-live="polite">{hint}</div>
         </div>
       )}
 
-      {/* Mobile-only: dock tap button — shown when near a dock */}
-      {isPhone && nearDock && (
+      {/* ── Mobile: Exit / Board ship button ─────────────────────────────── */}
+      {showDockBtn && (
         <div className="pointer-events-auto absolute left-1/2 -translate-x-1/2 z-30 mobile-dock-btn-wrap">
           <button
             id="mobile-dock-btn"
@@ -63,6 +77,19 @@ export function HUD() {
             onPointerDown={(e) => { e.stopPropagation(); triggerMobileDock(); }}
           >
             {mode === "ship" ? "⚓  Exit Ship" : "⛵  Board Ship"}
+          </button>
+        </div>
+      )}
+
+      {/* ── Mobile: Open section panel button ────────────────────────────── */}
+      {showPanelBtn && (
+        <div className="pointer-events-auto absolute left-1/2 -translate-x-1/2 z-30 mobile-dock-btn-wrap">
+          <button
+            id="mobile-panel-btn"
+            className="mobile-dock-btn mobile-panel-btn"
+            onPointerDown={(e) => { e.stopPropagation(); triggerMobilePanel(); }}
+          >
+            🔍&nbsp;&nbsp;Open {currentIsland?.label}
           </button>
         </div>
       )}
