@@ -1,5 +1,9 @@
 import { Float } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useGame } from "../state/GameContext.jsx";
+import { isPhoneDevice } from "../utils/device.js";
 import { ImportedWorldModel } from "./ImportedWorldModel.jsx";
 
 // ---------------------------------------------------------------------------
@@ -341,10 +345,37 @@ function ContactIsland() {
 // ---------------------------------------------------------------------------
 const ISLAND_COMPONENTS = [AboutIsland, SkillsIsland, ProjectsIsland, ResumeIsland, ContactIsland];
 
+function sameIds(a, b) {
+  return a.size === b.size && [...a].every((id) => b.has(id));
+}
+
 export function Island() {
+  const { mode, ship, player } = useGame();
+  const isPhone = useMemo(() => isPhoneDevice(), []);
+  const checkTimer = useRef(0);
+  const [visibleIds, setVisibleIds] = useState(() => new Set(ISLANDS.map((island) => island.id)));
+
+  // Mobile keeps only nearby islands mounted, which avoids drawing every GLB-heavy island at once.
+  useFrame((_, delta) => {
+    if (!isPhone) return;
+    checkTimer.current += delta;
+    if (checkTimer.current < 0.45) return;
+    checkTimer.current = 0;
+
+    const subject = mode === "ship" ? ship.current.position : player.current.position;
+    const next = new Set(
+      ISLANDS
+        .filter((island) => subject.distanceTo(island.worldPos) < 105)
+        .map((island) => island.id)
+    );
+
+    setVisibleIds((current) => (sameIds(current, next) ? current : next));
+  });
+
   return (
     <>
       {ISLANDS.map((island, index) => {
+        if (isPhone && !visibleIds.has(island.id)) return null;
         const Comp = ISLAND_COMPONENTS[index];
         return (
           <group key={island.id} position={[island.worldPos.x, -0.18, island.worldPos.z]}>

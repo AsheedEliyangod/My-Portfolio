@@ -2,13 +2,14 @@ import { useRef, useState } from "react";
 
 export function MobileJoystick({ onMove }) {
   const base = useRef(null);
+  const activePointer = useRef(null);
   const [knob, setKnob] = useState({ x: 0, y: 0 });
 
   const update = (event) => {
+    event.preventDefault();
     const rect = base.current.getBoundingClientRect();
-    const touch = event.touches ? event.touches[0] : event;
-    const x = touch.clientX - rect.left - rect.width / 2;
-    const y = touch.clientY - rect.top - rect.height / 2;
+    const x = event.clientX - rect.left - rect.width / 2;
+    const y = event.clientY - rect.top - rect.height / 2;
     const length = Math.hypot(x, y);
     const max = 42;
     const nx = length > max ? (x / length) * max : x;
@@ -17,7 +18,23 @@ export function MobileJoystick({ onMove }) {
     onMove({ x: nx / max, y: ny / max, active: true });
   };
 
-  const end = () => {
+  const start = (event) => {
+    activePointer.current = event.pointerId;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    update(event);
+  };
+
+  const move = (event) => {
+    if (activePointer.current !== event.pointerId) return;
+    update(event);
+  };
+
+  const end = (event) => {
+    if (event?.pointerId !== undefined && activePointer.current !== event.pointerId) return;
+    if (event?.currentTarget?.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    activePointer.current = null;
     setKnob({ x: 0, y: 0 });
     onMove({ x: 0, y: 0, active: false });
   };
@@ -27,10 +44,12 @@ export function MobileJoystick({ onMove }) {
       <div
         ref={base}
         className="pointer-events-auto h-28 w-28 rounded-full border border-white/20 bg-black/30 backdrop-blur-xl"
-        onPointerDown={update}
-        onPointerMove={(event) => event.buttons === 1 && update(event)}
+        style={{ touchAction: "none" }}
+        onPointerDown={start}
+        onPointerMove={move}
         onPointerUp={end}
         onPointerCancel={end}
+        onLostPointerCapture={end}
       >
         <div
           className="joystick-knob mx-auto mt-7 h-14 w-14 rounded-full border border-white/30 bg-white/25 shadow-2xl"

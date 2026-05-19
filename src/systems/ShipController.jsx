@@ -52,7 +52,7 @@ export function ShipController() {
       ? -stick.y
       : (keys.KeyW || keys.ArrowUp ? 1 : 0) + (keys.KeyS || keys.ArrowDown ? -1 : 0);
     const turnInput = mobile.active
-      ? stick.x
+      ? -stick.x
       : (keys.KeyA || keys.ArrowLeft ? 1 : 0) + (keys.KeyD || keys.ArrowRight ? -1 : 0);
 
     throttle.current = THREE.MathUtils.damp(

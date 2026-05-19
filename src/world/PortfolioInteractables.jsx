@@ -1,9 +1,10 @@
 import { Billboard, Float, Html, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { portfolio } from "../data/portfolio.js";
 import { useGame } from "../state/GameContext.jsx";
+import { isPhoneDevice } from "../utils/device.js";
 import { ISLANDS } from "./Island.jsx";
 
 // ---------------------------------------------------------------------------
@@ -99,17 +100,44 @@ function SkillOrbit() {
 // ---------------------------------------------------------------------------
 // Render all panels, each offset by their island's world position
 // ---------------------------------------------------------------------------
+function sameIds(a, b) {
+  return a.size === b.size && [...a].every((id) => b.has(id));
+}
+
 export function PortfolioInteractables() {
+  const { mode, ship, player } = useGame();
+  const isPhone = useMemo(() => isPhoneDevice(), []);
+  const checkTimer = useRef(0);
+  const [visibleIds, setVisibleIds] = useState(() => new Set(ISLANDS.map((island) => island.id)));
+
+  useFrame((_, delta) => {
+    if (!isPhone) return;
+    checkTimer.current += delta;
+    if (checkTimer.current < 0.45) return;
+    checkTimer.current = 0;
+
+    const subject = mode === "ship" ? ship.current.position : player.current.position;
+    const next = new Set(
+      ISLANDS
+        .filter((island) => subject.distanceTo(island.worldPos) < 105)
+        .map((island) => island.id)
+    );
+
+    setVisibleIds((current) => (sameIds(current, next) ? current : next));
+  });
+
   return (
     <>
       {ISLANDS.map((island) => (
-        <group key={island.id} position={[island.worldPos.x, 0, island.worldPos.z]}>
-          <Panel item={island} />
-          {/* Extra ambient light per island so panels are visible */}
-          <pointLight position={[0, 3, 2]} color={island.color} intensity={8} distance={14} />
-          {/* Skill orbit decoration only on Skills island */}
-          {island.id === "skills" && <SkillOrbit />}
-        </group>
+        isPhone && !visibleIds.has(island.id) ? null : (
+          <group key={island.id} position={[island.worldPos.x, 0, island.worldPos.z]}>
+            <Panel item={island} />
+            {/* Extra ambient light per island so panels are visible */}
+            <pointLight position={[0, 3, 2]} color={island.color} intensity={isPhone ? 5 : 8} distance={14} />
+            {/* Skill orbit decoration only on Skills island */}
+            {island.id === "skills" && <SkillOrbit />}
+          </group>
+        )
       ))}
     </>
   );
