@@ -28,6 +28,10 @@ export function GameProvider({ children }) {
     look: { x: 0, y: 0 }
   });
 
+  // Mobile dock trigger – set by HUD tap button, consumed by Ship/PlayerController each frame
+  const mobileDock = useRef({ triggered: false });
+  const triggerMobileDock = useCallback(() => { mobileDock.current.triggered = true; }, []);
+
   const openPanel  = useCallback((panel) => setActivePanel(panel), []);
   const closePanel = useCallback(() => setActivePanel(null), []);
   const setMobileInput = useCallback((mobile) => { input.current.mobile = mobile; }, []);
@@ -41,10 +45,11 @@ export function GameProvider({ children }) {
       activePanel, openPanel, closePanel,
       currentIsland, setCurrentIsland,
       ship, player, camera, input,
-      setMobileInput, setTouchLook
+      setMobileInput, setTouchLook,
+      mobileDock, triggerMobileDock
     }),
     [activePanel, closePanel, currentIsland, hint, mode, nearDock,
-     openPanel, setMobileInput, setTouchLook]
+     openPanel, setMobileInput, setTouchLook, triggerMobileDock]
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

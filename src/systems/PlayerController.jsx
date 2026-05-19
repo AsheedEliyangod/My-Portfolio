@@ -36,7 +36,8 @@ export function PlayerController() {
     setMode,
     setNearDock,
     currentIsland,
-    setCurrentIsland
+    setCurrentIsland,
+    mobileDock
   } = useGame();
 
   const velocity = useRef(new THREE.Vector2());
@@ -143,13 +144,14 @@ export function PlayerController() {
       }
     } else if (nearDock) {
       setHint("Press E to board ship");
-      if (keys.KeyE) {
+      if (keys.KeyE || mobileDock.current.triggered) {
         setMode("ship");
         setNearDock(true);
         ship.current.position.set(currentIsland.worldPos.x, 0.35, currentIsland.worldPos.z + 22);
         ship.current.rotation = Math.PI;
         setCurrentIsland(null);
         keys.KeyE = false;
+        mobileDock.current.triggered = false;
       }
     } else {
       setHint(`Explore the ${currentIsland.label} island`);

@@ -31,7 +31,8 @@ export function ShipController() {
     setNearDock,
     setHint,
     activePanel,
-    setCurrentIsland
+    setCurrentIsland,
+    mobileDock
   } = useGame();
 
   const velocity = useRef(new THREE.Vector2(0, 0));
@@ -144,7 +145,8 @@ export function ShipController() {
     setNearDock(isNear);
     setHint(isNear ? `Press E to dock at ${nearestIsland.label} island` : "Sail toward an island");
 
-    if (!activePanel && isNear && keys.KeyE) {
+    const dockTriggered = isNear && (keys.KeyE || mobileDock.current.triggered);
+    if (!activePanel && dockTriggered) {
       setMode("walk");
       velocity.current.set(0, 0);
       throttle.current = 0;
@@ -158,6 +160,7 @@ export function ShipController() {
       setCurrentIsland(nearestIsland);
       setHint(`Explore the ${nearestIsland.label} island`);
       keys.KeyE = false;
+      mobileDock.current.triggered = false;
     }
   });
 

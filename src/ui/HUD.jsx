@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useGame } from "../state/GameContext.jsx";
 import { portfolio } from "../data/portfolio.js";
+import { isPhoneDevice } from "../utils/device.js";
 
 const SOCIAL_SVGS = {
   github: (
@@ -25,7 +27,8 @@ const SOCIAL_SVGS = {
 };
 
 export function HUD() {
-  const { hint, mode } = useGame();
+  const { hint, mode, nearDock, triggerMobileDock } = useGame();
+  const isPhone = useMemo(() => isPhoneDevice(), []);
 
   return (
     <div className="hud-root pointer-events-none absolute inset-0 z-20">
@@ -44,10 +47,25 @@ export function HUD() {
         </div>
       </div>
 
-      {/* Bottom-center: hint */}
-      <div className="pointer-events-none absolute bottom-20 left-1/2 -translate-x-1/2 md:bottom-6">
-        <div className="hud-hint" aria-live="polite">{hint}</div>
-      </div>
+      {/* Bottom-center: hint (PC only) */}
+      {!isPhone && (
+        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2">
+          <div className="hud-hint" aria-live="polite">{hint}</div>
+        </div>
+      )}
+
+      {/* Mobile-only: dock tap button — shown when near a dock */}
+      {isPhone && nearDock && (
+        <div className="pointer-events-auto absolute left-1/2 -translate-x-1/2 z-30 mobile-dock-btn-wrap">
+          <button
+            id="mobile-dock-btn"
+            className="mobile-dock-btn"
+            onPointerDown={(e) => { e.stopPropagation(); triggerMobileDock(); }}
+          >
+            {mode === "ship" ? "⚓  Exit Ship" : "⛵  Board Ship"}
+          </button>
+        </div>
+      )}
 
       {/* Bottom-right: social icons */}
       <div className="pointer-events-auto absolute bottom-4 right-4">
