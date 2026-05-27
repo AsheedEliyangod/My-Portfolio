@@ -6,9 +6,15 @@ import { useGame } from "../state/GameContext.jsx";
 const target = new THREE.Vector3();
 const ideal = new THREE.Vector3();
 
+function dampAngle(current, targetAngle, lambda, delta) {
+  const twoPi = Math.PI * 2;
+  const difference = THREE.MathUtils.euclideanModulo(targetAngle - current + Math.PI, twoPi) - Math.PI;
+  return current + difference * (1 - Math.exp(-lambda * delta));
+}
+
 export function CameraRig() {
   const { camera: threeCamera, gl } = useThree();
-  const { mode, ship, player, camera, input, activePanel } = useGame();
+  const { mode, ship, player, bike, camera, input, activePanel } = useGame();
   const pointer = useRef({ dragging: false, x: 0, y: 0 });
 
   useEffect(() => {
@@ -48,16 +54,30 @@ export function CameraRig() {
     }
 
     // The same follow rig serves both vehicles and walking; only offset changes.
-    const subject = mode === "ship" ? ship.current : player.current;
-    target.set(subject.position.x, mode === "ship" ? subject.position.y + 1.2 : subject.position.y + 0.72, subject.position.z);
-    const distance = mode === "ship" ? 13 : 5.2;
-    const height = mode === "ship" ? 5.2 : 2.7;
+    const cycling = mode === "bike" || mode === "mountBike" || mode === "dismountBike";
+    const subject = mode === "ship" ? ship.current : cycling ? bike.current : player.current;
+    const bikeSpeed01 = cycling ? THREE.MathUtils.clamp(Math.abs(bike.current.speed) / 12.2, 0, 1) : 0;
+    const lookQuiet = Math.abs(input.current.look.x) + Math.abs(input.current.look.y) < 0.015;
+    if (mode === "bike" && !activePanel && !pointer.current.dragging && lookQuiet && bikeSpeed01 > 0.08) {
+      camera.current.yaw = dampAngle(camera.current.yaw, bike.current.rotation, 0.85 + bikeSpeed01 * 0.75, delta);
+    }
+    target.set(
+      subject.position.x,
+      mode === "ship"
+        ? subject.position.y + 1.2
+        : cycling
+          ? subject.position.y + THREE.MathUtils.lerp(1.24, 1.55, bikeSpeed01)
+          : subject.position.y + 0.72,
+      subject.position.z
+    );
+    const distance = mode === "ship" ? 20 : cycling ? THREE.MathUtils.lerp(8.9, 11.8, bikeSpeed01) : 6.4;
+    const height = mode === "ship" ? 7.2 : cycling ? THREE.MathUtils.lerp(3.6, 4.7, bikeSpeed01) : 3.2;
     ideal.set(
       target.x - Math.sin(camera.current.yaw) * distance,
       target.y + height + camera.current.pitch * 5,
       target.z - Math.cos(camera.current.yaw) * distance
     );
-    const followSpeed = mode === "ship" ? 4.2 : 7.5;
+    const followSpeed = mode === "ship" ? 4.2 : cycling ? THREE.MathUtils.lerp(7.2, 5.2, bikeSpeed01) : 7.5;
     threeCamera.position.lerp(ideal, 1 - Math.exp(-delta * followSpeed));
     threeCamera.lookAt(target);
   });

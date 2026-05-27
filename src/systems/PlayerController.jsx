@@ -3,16 +3,17 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "../state/GameContext.jsx";
 import { clampLength2D } from "../utils/math.js";
-import { resolveWorldCollisions } from "../data/worldColliders.js";
+import { PLAYER_RADIUS, resolveParkedBicycleCollision, resolveWorldCollisions } from "../data/worldColliders.js";
+import { ISLANDS, terrainHeight } from "../world/Island.jsx";
 
-const ISLAND_WALK_RADIUS = 14.8;
-const PANEL_LOCAL = new THREE.Vector3(0, 1.1, 2.0);
-const PANEL_RADIUS = 5.5;
-const DOCK_LOCAL_Z = 12.0;
-const DOCK_TRIGGER = 2.8;
+const PANEL_LOCAL = new THREE.Vector3(0, 1.1, 6.2);
+const PANEL_RADIUS = 9.4;
+const DOCK_LOCAL_Z = 96.5;
+const DOCK_TRIGGER = 6.4;
+const BIKE_PRIORITY_RADIUS = 5.6;
 
-const WALK_SPEED = 1.05;
-const RUN_SPEED = 1.75;
+const WALK_SPEED = 2.05;
+const RUN_SPEED = 4.45;
 const ACCELERATION = 12;
 const DECELERATION = 16;
 const ROTATION_DAMPING = 12;
@@ -27,6 +28,7 @@ export function PlayerController() {
   const {
     mode,
     player,
+    bike,
     ship,
     input,
     camera,
@@ -89,22 +91,42 @@ export function PlayerController() {
 
     const previousX = state.position.x;
     const previousZ = state.position.z;
+    const activeLocation = ISLANDS.reduce((nearest, island) => {
+      const distance = state.position.distanceTo(island.worldPos);
+      return distance < nearest.distance ? { island, distance } : nearest;
+    }, { island: currentIsland ?? ISLANDS[0], distance: Infinity }).island;
+
+    if (activeLocation && activeLocation !== currentIsland) {
+      setCurrentIsland(activeLocation);
+    }
 
     state.position.x += velocity.current.x * step;
     state.position.z += velocity.current.y * step;
-    resolveWorldCollisions(state.position, currentIsland);
-
-    state.position.y = 0.52;
-
-    if (currentIsland) {
-      const offsetX = state.position.x - currentIsland.worldPos.x;
-      const offsetZ = state.position.z - currentIsland.worldPos.z;
-      const radius = Math.hypot(offsetX, offsetZ);
-      if (radius > ISLAND_WALK_RADIUS) {
-        state.position.x = currentIsland.worldPos.x + (offsetX / radius) * ISLAND_WALK_RADIUS;
-        state.position.z = currentIsland.worldPos.z + (offsetZ / radius) * ISLAND_WALK_RADIUS;
+    const collision = resolveWorldCollisions(state.position, activeLocation, PLAYER_RADIUS);
+    const bikeCollision = !activePanel && state.position.distanceTo(bike.current.position) < 3.2
+      ? resolveParkedBicycleCollision(state.position, bike.current, PLAYER_RADIUS)
+      : null;
+    if (bikeCollision?.hit) {
+      collision.hit = true;
+      collision.correctionX += bikeCollision.correctionX;
+      collision.correctionZ += bikeCollision.correctionZ;
+      collision.hits += bikeCollision.hits;
+    }
+    if (collision.hit) {
+      const correctionLength = Math.hypot(collision.correctionX, collision.correctionZ);
+      if (correctionLength > 0.0001) {
+        const nx = collision.correctionX / correctionLength;
+        const nz = collision.correctionZ / correctionLength;
+        const inwardSpeed = velocity.current.x * nx + velocity.current.y * nz;
+        if (inwardSpeed < 0) {
+          velocity.current.x -= nx * inwardSpeed;
+          velocity.current.y -= nz * inwardSpeed;
+        }
+        velocity.current.multiplyScalar(0.82);
       }
     }
+
+    state.position.y = terrainHeight(state.position.x, state.position.z) + 0.72;
 
     const actualX = state.position.x - previousX;
     const actualZ = state.position.z - previousZ;
@@ -123,26 +145,36 @@ export function PlayerController() {
       );
     }
 
-    if (!currentIsland) return;
+    if (!activeLocation) return;
 
     const panelWorld = new THREE.Vector3(
-      currentIsland.worldPos.x + PANEL_LOCAL.x,
+      activeLocation.worldPos.x + PANEL_LOCAL.x,
       state.position.y,
-      currentIsland.worldPos.z + PANEL_LOCAL.z
+      activeLocation.worldPos.z + PANEL_LOCAL.z
     );
     const dockWorld = new THREE.Vector3(
-      currentIsland.worldPos.x,
+      0,
       state.position.y,
-      currentIsland.worldPos.z + DOCK_LOCAL_Z
+      DOCK_LOCAL_Z
     );
     const nearPanel = state.position.distanceTo(panelWorld) < PANEL_RADIUS;
     const nearDock = state.position.distanceTo(dockWorld) < DOCK_TRIGGER;
+    const nearBike = state.position.distanceTo(bike.current.position) < BIKE_PRIORITY_RADIUS && !activePanel;
+
+    if (nearBike) {
+      setNearPanel(false);
+      setNearDock(false);
+      setHint("Press E to Ride Bicycle");
+      mobilePanel.current.triggered = false;
+      mobileDock.current.triggered = false;
+      return;
+    }
 
     if (nearPanel && !nearDock) {
-      setHint(`Press E to open ${currentIsland.label}`);
+      setHint(`Press E to inspect ${activeLocation.label}`);
       setNearPanel(true);
       if (!activePanel && (keys.KeyE || mobilePanel.current.triggered)) {
-        openPanel(currentIsland.id);
+        openPanel(activeLocation.id);
         keys.KeyE = false;
         mobilePanel.current.triggered = false;
       }
@@ -152,7 +184,7 @@ export function PlayerController() {
       if (keys.KeyE || mobileDock.current.triggered) {
         setMode("ship");
         setNearDock(true);
-        ship.current.position.set(currentIsland.worldPos.x, 0.35, currentIsland.worldPos.z + 22);
+        ship.current.position.set(0, 0.35, DOCK_LOCAL_Z + 10);
         ship.current.rotation = Math.PI;
         setCurrentIsland(null);
         keys.KeyE = false;
@@ -160,7 +192,7 @@ export function PlayerController() {
       }
     } else {
       setNearPanel(false);
-      setHint(`Explore the ${currentIsland.label} island`);
+      setHint(`Explore the ${activeLocation.label}`);
     }
   });
 

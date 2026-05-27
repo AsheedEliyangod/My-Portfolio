@@ -50,5 +50,6 @@ export function ImportedWorldModel({
 }
 
 useGLTF.preload("/models/beach_003.glb");
+useGLTF.preload("/models/lowpoly_island.glb");
 useGLTF.preload("/models/harbor_house_fixed.glb");
 useGLTF.preload("/models/coconut_tree.glb");

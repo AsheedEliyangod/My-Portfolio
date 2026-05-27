@@ -2,8 +2,11 @@ import { Suspense, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, Preload, Stats } from "@react-three/drei";
 import { AnimatePresence } from "framer-motion";
+import * as THREE from "three";
 import { World } from "./world/World.jsx";
+import { CinematicEffects } from "./world/CinematicEffects.jsx";
 import { CameraRig } from "./systems/CameraRig.jsx";
+import { AmbientAudio } from "./systems/AmbientAudio.jsx";
 import { GameProvider, useGame } from "./state/GameContext.jsx";
 import { HUD } from "./ui/HUD.jsx";
 import { Modal } from "./ui/Modal.jsx";
@@ -19,15 +22,21 @@ function Scene() {
     <Canvas
       shadows={!isPhone}
       dpr={isPhone ? [0.75, 1] : [1, 1.75]}
-      camera={{ position: [0, 7, 16], fov: 50, near: 0.1, far: 520 }}
-      gl={{ antialias: !isPhone, powerPreference: isPhone ? "default" : "high-performance" }}
+      camera={{ position: [0, 10, 28], fov: 46, near: 0.1, far: 920 }}
+      gl={{
+        antialias: !isPhone,
+        powerPreference: isPhone ? "default" : "high-performance",
+        toneMapping: THREE.ACESFilmicToneMapping,
+        outputColorSpace: THREE.SRGBColorSpace
+      }}
     >
-      <color attach="background" args={["#8bc8e8"]} />
-      <fog attach="fog" args={["#8bc8e8", isPhone ? 28 : 34, isPhone ? 140 : 190]} />
+      <color attach="background" args={["#02060b"]} />
+      <fog attach="fog" args={["#07111d", isPhone ? 45 : 58, isPhone ? 230 : 340]} />
       <Suspense fallback={null}>
         <World />
         <CameraRig />
-        {!isPhone ? <Environment preset="sunset" /> : null}
+        {!isPhone ? <Environment preset="night" background={false} /> : null}
+        <CinematicEffects />
         {!isPhone ? <Preload all /> : null}
       </Suspense>
       {/* LoadingScreen reads useProgress which only works inside Canvas */}
@@ -46,6 +55,7 @@ function Shell() {
       {/* Cinematic loader — must be outside Canvas but inside the R3F tree so useProgress works */}
       <LoadingScreen />
       <HUD />
+      <AmbientAudio />
       {isPhone ? <MobileJoystick onMove={setMobileInput} /> : null}
       {isPhone ? <TouchLookPad onLook={setTouchLook} /> : null}
       <AnimatePresence>

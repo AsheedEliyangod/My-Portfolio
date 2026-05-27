@@ -1,192 +1,304 @@
 import * as THREE from "three";
 
-export const PLAYER_RADIUS = 0.16;
-export const SHIP_RADIUS   = 3.4;   // ship hull collision vs dock/island
+export const PLAYER_RADIUS = 0.32;
+export const BICYCLE_RADIUS = 0.28;
+export const SHIP_RADIUS = 3.4;
 
-// ---------------------------------------------------------------------------
-// Per-island colliders in LOCAL space (island group origin = 0,0,0).
-// Covers: buildings, dock, barrels, totems, boulders, coconut trees.
-// ---------------------------------------------------------------------------
+const WORLD_CENTER = new THREE.Vector2(0, 8);
+const WORLD_BOUNDARY_RADIUS = 109;
+const MAIN_ISLAND_CENTER = new THREE.Vector2(0, 8);
+const MAIN_ISLAND_SHIP_RADIUS = 100;
+
+const ISLAND_ROOTS = {
+  about: new THREE.Vector2(-46, -46),
+  projects: new THREE.Vector2(-72, 10),
+  skills: new THREE.Vector2(64, -20),
+  resume: new THREE.Vector2(-34, 62),
+  contact: new THREE.Vector2(58, 56),
+};
+
+function seeded(index) {
+  return THREE.MathUtils.euclideanModulo(Math.sin(index * 91.17) * 43758.5453, 1);
+}
+
+function circle(id, x, z, r, response = 1) {
+  return { id, type: "circle", x, z, r, response };
+}
+
+function box(id, x, z, hx, hz, rotation = 0, response = 1) {
+  return { id, type: "box", x, z, hx, hz, rotation, response };
+}
+
 export const localIslandColliders = {
-  // ── About Island ───────────────────────────────────────────────────────────
   about: [
-    // ── Island terrain (large circle stops ship from sailing through) ──────────
-    { id: "island-terrain",  pos: new THREE.Vector2(  0,    0),   r: 12.9, shipOnly: true },
-    // Harbor house
-    { id: "harbor-house",   pos: new THREE.Vector2(  0,   -1.5), r: 3.15 },
-    // Dock center-line — wide soft wall so player can't walk off end
-    { id: "dock-center",    pos: new THREE.Vector2(  0,   12.8), r: 1.6 },
-    // Dock side posts
-    { id: "dock-post-l",    pos: new THREE.Vector2( -1.2,  9.8), r: 0.28 },
-    { id: "dock-post-r",    pos: new THREE.Vector2(  1.2,  9.8), r: 0.28 },
-    // Barrels cluster
-    { id: "barrel-a",       pos: new THREE.Vector2( -2.8,  7.5), r: 0.42 },
-    { id: "barrel-b",       pos: new THREE.Vector2( -2.2,  7.6), r: 0.42 },
-    { id: "barrel-c",       pos: new THREE.Vector2(  2.5,  7.4), r: 0.42 },
-    // Totems
-    { id: "totem-l",        pos: new THREE.Vector2( -4.2,  1.2), r: 0.32 },
-    { id: "totem-r",        pos: new THREE.Vector2(  4.0,  0.8), r: 0.32 },
-    // Coconut trees
-    { id: "tree-a",         pos: new THREE.Vector2(  5.6, -4.7), r: 0.78 },
-    { id: "tree-b",         pos: new THREE.Vector2(  7.7,  1.4), r: 0.78 },
-    { id: "tree-c",         pos: new THREE.Vector2( -7.8,  5.1), r: 0.78 },
-    { id: "tree-d",         pos: new THREE.Vector2( -1.8, -8.1), r: 0.78 },
-    // Rocks
-    { id: "rock-a",         pos: new THREE.Vector2(  8,    5),   r: 0.7  },
-    { id: "rock-b",         pos: new THREE.Vector2( -9,   -2),   r: 0.7  },
-    { id: "rock-c",         pos: new THREE.Vector2(  3,   -8),   r: 0.7  },
-    { id: "rock-d",         pos: new THREE.Vector2( -5,    7),   r: 0.7  },
+    box("developer-house", 0, 0, 6.0, 4.05),
+    box("developer-deck", 0, 6.8, 6.45, 3.45),
+    circle("guest-house", 9.5, -5.5, 3.4),
   ],
-
-  // ── Skills Island ──────────────────────────────────────────────────────────
-  skills: [
-    // ── Island terrain ────────────────────────────────────────────────────────
-    { id: "island-terrain",  pos: new THREE.Vector2(  0,    0),   r: 12.9, shipOnly: true },
-    // Totem tower (merged into one large cylinder)
-    { id: "totem-tower",    pos: new THREE.Vector2(  0,   -2.0), r: 0.52 },
-    // Dock
-    { id: "dock-center",    pos: new THREE.Vector2(  0,   12.8), r: 1.6  },
-    { id: "dock-post-l",    pos: new THREE.Vector2( -1.2,  9.8), r: 0.28 },
-    { id: "dock-post-r",    pos: new THREE.Vector2(  1.2,  9.8), r: 0.28 },
-    // Barrel pair
-    { id: "barrel-a",       pos: new THREE.Vector2(  3.0, -1.0), r: 0.42 },
-    { id: "barrel-b",       pos: new THREE.Vector2(  3.5, -1.2), r: 0.42 },
-    // Coconut trees
-    { id: "tree-a",         pos: new THREE.Vector2(  4.5,  2.5), r: 0.78 },
-    { id: "tree-b",         pos: new THREE.Vector2( -4.5,  2.0), r: 0.78 },
-    { id: "tree-c",         pos: new THREE.Vector2(  2.0, -5.5), r: 0.78 },
-    // Boulders / rocks
-    { id: "boulder",        pos: new THREE.Vector2( -3.0, -4.0), r: 0.72 },
-    { id: "rock-a",         pos: new THREE.Vector2(  7,   -3),   r: 0.7  },
-    { id: "rock-b",         pos: new THREE.Vector2( -7,    4),   r: 0.7  },
-  ],
-
-  // ── Projects Island ────────────────────────────────────────────────────────
   projects: [
-    // ── Island terrain ────────────────────────────────────────────────────────
-    { id: "island-terrain",  pos: new THREE.Vector2(  0,    0),   r: 12.9, shipOnly: true },
-    // Harbor house
-    { id: "harbor-house",   pos: new THREE.Vector2(  0.5, -2.0), r: 3.0  },
-    // Dock
-    { id: "dock-center",    pos: new THREE.Vector2(  0,   12.8), r: 1.6  },
-    { id: "dock-post-l",    pos: new THREE.Vector2( -1.2,  9.8), r: 0.28 },
-    { id: "dock-post-r",    pos: new THREE.Vector2(  1.2,  9.8), r: 0.28 },
-    // Totem
-    { id: "totem",          pos: new THREE.Vector2(  4.5,  1.5), r: 0.32 },
-    // Barrel cluster
-    { id: "barrel-a",       pos: new THREE.Vector2( -2.5,  1.2), r: 0.42 },
-    { id: "barrel-b",       pos: new THREE.Vector2( -2.0,  0.8), r: 0.42 },
-    { id: "barrel-c",       pos: new THREE.Vector2( -3.0,  0.6), r: 0.42 },
-    // Trees
-    { id: "tree-a",         pos: new THREE.Vector2( -5.0,  3.0), r: 0.78 },
-    { id: "tree-b",         pos: new THREE.Vector2(  5.0, -4.0), r: 0.78 },
-    { id: "tree-c",         pos: new THREE.Vector2( -4.5, -3.5), r: 0.78 },
-    // Boulders / rocks
-    { id: "boulder-a",      pos: new THREE.Vector2(  5.5,  3.0), r: 0.72 },
-    { id: "boulder-b",      pos: new THREE.Vector2( -4.0,  5.0), r: 0.58 },
-    { id: "rock-a",         pos: new THREE.Vector2(  6,    5),   r: 0.7  },
-    { id: "rock-b",         pos: new THREE.Vector2( -6,   -3),   r: 0.7  },
+    box("studio-building", 0, 0, 7.55, 5.05),
+    circle("project-annex", -12, -8, 4.25),
   ],
-
-  // ── Resume Island ──────────────────────────────────────────────────────────
+  skills: [
+    circle("tower-left", -10, 2, 2.15),
+    circle("tower-mid", -3, -4, 2.45),
+    circle("tower-right", 6, -1, 2.1),
+    circle("tower-edge", 13, 5, 1.95),
+    circle("tower-front", 3, 8, 1.85),
+  ],
   resume: [
-    // ── Island terrain ────────────────────────────────────────────────────────
-    { id: "island-terrain",  pos: new THREE.Vector2(  0,    0),   r: 12.9, shipOnly: true },
-    // Stone arch posts (thin pillar radius)
-    { id: "arch-l",         pos: new THREE.Vector2( -1.2, -2.0), r: 0.30 },
-    { id: "arch-r",         pos: new THREE.Vector2(  1.2, -2.0), r: 0.30 },
-    // Scroll slab
-    { id: "slab",           pos: new THREE.Vector2(  0.0, -3.2), r: 0.9  },
-    // Dock
-    { id: "dock-center",    pos: new THREE.Vector2(  0,   12.8), r: 1.6  },
-    { id: "dock-post-l",    pos: new THREE.Vector2( -1.2,  9.8), r: 0.28 },
-    { id: "dock-post-r",    pos: new THREE.Vector2(  1.2,  9.8), r: 0.28 },
-    // Totems
-    { id: "totem-l",        pos: new THREE.Vector2( -4.5,  0.5), r: 0.32 },
-    { id: "totem-r",        pos: new THREE.Vector2(  4.5,  0.5), r: 0.32 },
-    // Trees
-    { id: "tree-a",         pos: new THREE.Vector2(  4.5,  3.0), r: 0.78 },
-    { id: "tree-b",         pos: new THREE.Vector2( -5.0, -4.0), r: 0.78 },
-    { id: "tree-c",         pos: new THREE.Vector2( -3.5,  4.0), r: 0.78 },
-    // Boulder / rocks
-    { id: "boulder",        pos: new THREE.Vector2(  3.0, -5.5), r: 0.72 },
-    { id: "rock-a",         pos: new THREE.Vector2(  6,   -3),   r: 0.7  },
-    { id: "rock-b",         pos: new THREE.Vector2( -6,    4),   r: 0.7  },
+    circle("observatory", 0, 0, 5.8),
+    box("archive", 0, 7.2, 5.45, 1.55),
   ],
-
-  // ── Contact Island ─────────────────────────────────────────────────────────
   contact: [
-    // ── Island terrain ────────────────────────────────────────────────────────
-    { id: "island-terrain",  pos: new THREE.Vector2(  0,    0),   r: 12.9, shipOnly: true },
-    // Fire pit
-    { id: "fire-pit",       pos: new THREE.Vector2(  0.0, -2.5), r: 1.05 },
-    // Dock
-    { id: "dock-center",    pos: new THREE.Vector2(  0,   12.8), r: 1.6  },
-    { id: "dock-post-l",    pos: new THREE.Vector2( -1.2,  9.8), r: 0.28 },
-    { id: "dock-post-r",    pos: new THREE.Vector2(  1.2,  9.8), r: 0.28 },
-    // Totems
-    { id: "totem-l",        pos: new THREE.Vector2( -4.0, -1.5), r: 0.32 },
-    { id: "totem-r",        pos: new THREE.Vector2(  4.0, -1.5), r: 0.32 },
-    // Trees
-    { id: "tree-a",         pos: new THREE.Vector2(  3.5, -4.5), r: 0.78 },
-    { id: "tree-b",         pos: new THREE.Vector2( -3.5, -3.5), r: 0.78 },
-    { id: "tree-c",         pos: new THREE.Vector2(  0.5, -6.0), r: 0.78 },
-    // Boulder / rocks
-    { id: "boulder",        pos: new THREE.Vector2( -3.0,  4.5), r: 0.72 },
-    { id: "rock-a",         pos: new THREE.Vector2(  5,    4),   r: 0.7  },
-    { id: "rock-b",         pos: new THREE.Vector2( -5,   -4),   r: 0.7  },
-    { id: "rock-c",         pos: new THREE.Vector2(  0,   -6),   r: 0.7  },
+    circle("comms-tower", 0, 0, 3.35),
   ],
 };
 
-// ---------------------------------------------------------------------------
-// Resolve player ↔ island colliders
-// ---------------------------------------------------------------------------
-export function resolveWorldCollisions(position, island) {
-  if (!island) return;
-  const colliders = localIslandColliders[island.id] ?? [];
-  for (const c of colliders) {
-    if (c.shipOnly) continue; // island-terrain only blocks ships, not the walking player
-    const dx = position.x - (island.worldPos.x + c.pos.x);
-    const dz = position.z - (island.worldPos.z + c.pos.y);
-    const dist = Math.hypot(dx, dz);
-    const min  = c.r + PLAYER_RADIUS;
-    if (dist > 0.0001 && dist < min) {
-      const push = min - dist;
-      position.x += (dx / dist) * push;
-      position.z += (dz / dist) * push;
-    }
-  }
+const streetLights = [
+  [-2.8, 78], [2.8, 65], [-2.8, 51], [2.8, 38],
+  [-10, 22], [-23, 6], [-39, -15], [-55, -34],
+  [14, 17], [29, 7], [45, -6], [58, -16],
+  [-22, 45], [-30, 56], [20, 42], [40, 50],
+].map(([x, z], index) => circle(`street-light-${index}`, x, z, 0.22));
+
+const harborPosts = [
+  ...[-2.8, 2.8].flatMap((x) => [-3.6, 1.2, 6, 10.8, 15.6, 20.4, 24.2].map((z) => [x, z])),
+  ...[-12.8, -4.2, 4.2, 12.8].map((x) => [x, -2.15]),
+].map(([x, localZ], index) => circle(`harbor-post-${index}`, x, 92 + localZ, 0.21));
+
+const dockLamps = [
+  ...[-7.8, -2.5, 2.5, 7.8].map((x) => [x, -3.4]),
+  ...[-2.85, 2.85].map((x) => [x, 17.8]),
+].map(([x, localZ], index) => circle(`dock-lamp-${index}`, x, 92 + localZ, 0.26));
+
+const harborProps = [
+  box("harbor-left-edge", -15.2, 101.5, 0.42, 12.6),
+  box("harbor-right-edge", 15.2, 101.5, 0.42, 12.6),
+  box("harbor-left-boat-01", -9.7, 100.2, 1.08, 2.85, -0.08),
+  box("harbor-right-boat", 9.8, 107.6, 1.08, 2.85, 0.08),
+  box("harbor-left-boat-02", -9.3, 114, 1.08, 2.85, 0.05),
+  circle("crate-stack-left", -9.2, 85.3, 0.78),
+  circle("crate-stack-right", 8.4, 84.5, 0.78),
+  circle("crate-stack-pier", 4.6, 94.5, 0.68),
+];
+
+const cliffRocks = [
+  ...[-82, -56, -28, 36, 74].map((x, index) => circle(
+    `north-cliff-rock-${index}`,
+    x,
+    -93 + seeded(index) * 16,
+    2.8 + seeded(index + 2) * 1.4
+  )),
+  ...[-84, -62, 70, 88].map((z, index) => circle(
+    `west-cliff-rock-${index}`,
+    -100 + seeded(index + 20) * 12,
+    z,
+    3.0
+  )),
+];
+
+const rockField = Array.from({ length: 55 }, (_, index) => {
+  const angle = seeded(index + 600) * Math.PI * 2;
+  const radius = 48 + seeded(index + 700) * 62;
+  const x = Math.cos(angle) * radius;
+  const z = 8 + Math.sin(angle) * radius;
+  const sx = 0.7 + seeded(index) * 2.4;
+  const sz = 0.7 + seeded(index + 2) * 2.2;
+  return circle(`field-rock-${index}`, x, z, Math.max(sx, sz) * 0.48);
+});
+
+const treeTrunks = Array.from({ length: 70 }, (_, index) => {
+  const cluster = index % 3;
+  const base = cluster === 0 ? [-10, -72] : cluster === 1 ? [62, 18] : [-62, -36];
+  const spread = cluster === 0 ? [48, 30] : cluster === 1 ? [34, 56] : [30, 35];
+  const x = base[0] + (seeded(index) - 0.5) * spread[0];
+  const z = base[1] + (seeded(index + 100) - 0.5) * spread[1];
+  const scale = 0.72 + seeded(index + 200) * 0.92;
+  return circle(`forest-tree-${index}`, x, z, 0.22 + scale * 0.12, 0.85);
+});
+
+const palms = [
+  circle("harbor-palm-left", -16, 82, 0.38),
+  circle("harbor-palm-mid", 13, 88, 0.4),
+  circle("harbor-palm-right", 28, 77, 0.36),
+];
+
+const secretLocations = [
+  circle("hidden-shader-shrine", 18, -82, 1.15),
+  circle("abandoned-build-cache", -78, -58, 1.15),
+  circle("quiet-render-lookout", 84, 22, 1.15),
+];
+
+export const globalColliders = [
+  ...Object.entries(localIslandColliders).flatMap(([id, colliders]) => {
+    const root = ISLAND_ROOTS[id];
+    return colliders.map((collider) => (
+      collider.type === "box"
+        ? box(`${id}-${collider.id}`, root.x + collider.x, root.y + collider.z, collider.hx, collider.hz, collider.rotation ?? 0)
+        : circle(`${id}-${collider.id}`, root.x + collider.x, root.y + collider.z, collider.r)
+    ));
+  }),
+  ...streetLights,
+  ...harborPosts,
+  ...dockLamps,
+  ...harborProps,
+  ...cliffRocks,
+  ...rockField,
+  ...treeTrunks,
+  ...palms,
+  ...secretLocations,
+];
+
+function resolveCircle(position, collider, radius) {
+  const min = collider.r + radius;
+  const dx = position.x - collider.x;
+  const dz = position.z - collider.z;
+  if (Math.abs(dx) > min || Math.abs(dz) > min) return null;
+  const dist = Math.hypot(dx, dz);
+  if (dist >= min) return null;
+  if (dist < 0.0001) return { x: min, z: 0, strength: collider.response ?? 1 };
+  const push = (min - dist) * (collider.response ?? 1);
+  return { x: (dx / dist) * push, z: (dz / dist) * push, strength: collider.response ?? 1 };
 }
 
-// ---------------------------------------------------------------------------
-// Resolve ship ↔ island/dock colliders  (called from ShipController)
-// – Pushes the ship's position out of overlapping colliders
-// – Also zeros the approaching component of the velocity vector so the ship
-//   doesn't clip through on the next frame (pass velocity as THREE.Vector2)
-// ---------------------------------------------------------------------------
-const SHIP_BLOCK_IDS = new Set([
-  "island-terrain",
-  "harbor-house", "dock-center", "dock-post-l", "dock-post-r",
-  "totem-tower", "arch-l", "arch-r", "fire-pit", "slab"
-]);
+function resolveBox(position, collider, radius) {
+  const sin = Math.sin(-(collider.rotation ?? 0));
+  const cos = Math.cos(-(collider.rotation ?? 0));
+  const dx = position.x - collider.x;
+  const dz = position.z - collider.z;
+  const lx = dx * cos - dz * sin;
+  const lz = dx * sin + dz * cos;
+  const hx = collider.hx + radius;
+  const hz = collider.hz + radius;
+  if (Math.abs(lx) > hx || Math.abs(lz) > hz) return null;
 
-export function resolveShipCollisions(shipState, islands) {
-  for (const island of islands) {
-    const colliders = localIslandColliders[island.id] ?? [];
-    for (const c of colliders) {
-      if (!SHIP_BLOCK_IDS.has(c.id)) continue;
-      const dx = shipState.position.x - (island.worldPos.x + c.pos.x);
-      const dz = shipState.position.z - (island.worldPos.z + c.pos.y);
-      const dist = Math.hypot(dx, dz);
-      const min  = c.r + SHIP_RADIUS;
-      if (dist > 0.0001 && dist < min) {
-        const push = min - dist;
-        shipState.position.x += (dx / dist) * push;
-        shipState.position.z += (dz / dist) * push;
-        // Dampen speed on collision
-        shipState.speed *= 0.25;
-      }
-    }
+  const overlapX = hx - Math.abs(lx);
+  const overlapZ = hz - Math.abs(lz);
+  let px = 0;
+  let pz = 0;
+  if (overlapX < overlapZ) {
+    px = (lx >= 0 ? 1 : -1) * overlapX;
+  } else {
+    pz = (lz >= 0 ? 1 : -1) * overlapZ;
+  }
+
+  const rotSin = Math.sin(collider.rotation ?? 0);
+  const rotCos = Math.cos(collider.rotation ?? 0);
+  return {
+    x: (px * rotCos - pz * rotSin) * (collider.response ?? 1),
+    z: (px * rotSin + pz * rotCos) * (collider.response ?? 1),
+    strength: collider.response ?? 1
+  };
+}
+
+function resolveBoundary(position, radius) {
+  const dx = position.x - WORLD_CENTER.x;
+  const dz = position.z - WORLD_CENTER.y;
+  const dist = Math.hypot(dx, dz);
+  const max = WORLD_BOUNDARY_RADIUS - radius;
+  if (dist <= max) return null;
+  if (dist < 0.0001) return { x: 0, z: -max };
+  const targetX = WORLD_CENTER.x + (dx / dist) * max;
+  const targetZ = WORLD_CENTER.y + (dz / dist) * max;
+  return { x: targetX - position.x, z: targetZ - position.z };
+}
+
+export function resolveWorldCollisions(position, _island = null, radius = PLAYER_RADIUS) {
+  const result = { hit: false, correctionX: 0, correctionZ: 0, hits: 0 };
+  for (const collider of globalColliders) {
+    const correction = collider.type === "box"
+      ? resolveBox(position, collider, radius)
+      : resolveCircle(position, collider, radius);
+    if (!correction) continue;
+    position.x += correction.x;
+    position.z += correction.z;
+    result.hit = true;
+    result.hits += 1;
+    result.correctionX += correction.x;
+    result.correctionZ += correction.z;
+  }
+
+  const boundary = resolveBoundary(position, radius);
+  if (boundary) {
+    position.x += boundary.x;
+    position.z += boundary.z;
+    result.hit = true;
+    result.hits += 1;
+    result.correctionX += boundary.x;
+    result.correctionZ += boundary.z;
+  }
+
+  return result;
+}
+
+function bikePointToWorld(bikeState, localX, localZ) {
+  const sin = Math.sin(bikeState.rotation);
+  const cos = Math.cos(bikeState.rotation);
+  return new THREE.Vector3(
+    bikeState.position.x + localX * cos + localZ * sin,
+    bikeState.position.y,
+    bikeState.position.z - localX * sin + localZ * cos
+  );
+}
+
+export function resolveBicycleCollisions(bikeState) {
+  const probes = [
+    { localX: 0, localZ: -0.62, radius: 0.24, weight: 0.42 },
+    { localX: 0, localZ: 0.62, radius: 0.24, weight: 0.42 },
+    { localX: 0, localZ: -0.04, radius: 0.22, weight: 0.16 },
+  ];
+  const result = { hit: false, correctionX: 0, correctionZ: 0, hits: 0 };
+
+  for (const probe of probes) {
+    const world = bikePointToWorld(bikeState, probe.localX, probe.localZ);
+    const collision = resolveWorldCollisions(world, null, probe.radius);
+    if (!collision.hit) continue;
+    const x = collision.correctionX * probe.weight;
+    const z = collision.correctionZ * probe.weight;
+    bikeState.position.x += x;
+    bikeState.position.z += z;
+    result.hit = true;
+    result.hits += collision.hits;
+    result.correctionX += x;
+    result.correctionZ += z;
+  }
+
+  return result;
+}
+
+export function resolveParkedBicycleCollision(position, bikeState, radius = PLAYER_RADIUS) {
+  const probes = [
+    { localX: 0, localZ: -0.62, radius: 0.18 },
+    { localX: 0, localZ: 0.62, radius: 0.18 },
+    { localX: 0, localZ: -0.04, radius: 0.16 },
+  ];
+  const result = { hit: false, correctionX: 0, correctionZ: 0, hits: 0 };
+
+  for (const probe of probes) {
+    const point = bikePointToWorld(bikeState, probe.localX, probe.localZ);
+    const correction = resolveCircle(position, circle("parked-bike", point.x, point.z, probe.radius), radius);
+    if (!correction) continue;
+    position.x += correction.x;
+    position.z += correction.z;
+    result.hit = true;
+    result.hits += 1;
+    result.correctionX += correction.x;
+    result.correctionZ += correction.z;
+  }
+
+  return result;
+}
+
+export function resolveShipCollisions(shipState) {
+  const dx = shipState.position.x - MAIN_ISLAND_CENTER.x;
+  const dz = shipState.position.z - MAIN_ISLAND_CENTER.y;
+  const dist = Math.hypot(dx, dz);
+  const min = MAIN_ISLAND_SHIP_RADIUS + SHIP_RADIUS;
+  if (dist > 0.0001 && dist < min) {
+    const push = min - dist;
+    shipState.position.x += (dx / dist) * push;
+    shipState.position.z += (dz / dist) * push;
+    shipState.speed *= 0.25;
   }
 }

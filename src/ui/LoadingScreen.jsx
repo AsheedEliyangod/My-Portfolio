@@ -52,7 +52,7 @@ function PCControls() {
 
       <Row
         delay={0.18}
-        desc="Interact / board ship"
+        desc="Interact / ride bike / board ship"
         keys={<Key label="E" />}
       />
 
@@ -178,8 +178,8 @@ function GameIntro({ onDismiss }) {
         {/* Footer hint */}
         <div className="intro-footer">
           {isPhone
-            ? "Sail to an island · tap dock · explore"
-            : "Sail to an island · dock · explore"}
+            ? "Sail to harbor · ride roads · explore districts"
+            : "Sail to harbor · ride roads · explore districts"}
         </div>
 
         <button className="intro-dismiss" onClick={dismiss}>
@@ -231,9 +231,9 @@ export function LoadingScreen() {
 
           <div className="loader-center">
             <div className="loader-title-block">
-              <div className="loader-eyebrow">Game Dev · UI/UX · 3D</div>
+              <div className="loader-eyebrow">React / Three.js / GSAP</div>
               <div className="loader-title">Asheed&nbsp;Eliyangod</div>
-              <div className="loader-subtitle">Ocean World Portfolio</div>
+              <div className="loader-subtitle">Cinematic Developer Island</div>
             </div>
 
             {!ready && (

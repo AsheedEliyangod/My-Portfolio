@@ -23,8 +23,10 @@ body,
 
 body {
   background:
-    radial-gradient(circle at 40% 15%, rgba(66, 168, 224, 0.28), transparent 34rem),
-    linear-gradient(180deg, #091929 0%, #071018 55%, #05080d 100%);
+    radial-gradient(circle at 18% 22%, rgba(255, 126, 219, 0.16), transparent 28rem),
+    radial-gradient(circle at 72% 18%, rgba(114, 255, 183, 0.12), transparent 32rem),
+    radial-gradient(circle at 46% 70%, rgba(125, 249, 255, 0.12), transparent 38rem),
+    linear-gradient(180deg, #05080d 0%, #071018 55%, #020407 100%);
 }
 
 canvas {
@@ -1049,6 +1051,130 @@ canvas {
   letter-spacing: 0.04em;
 }
 
+.hud-controls-line {
+  margin-top: 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+}
+
+.hud-settings-btn {
+  all: unset;
+  cursor: pointer;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(5, 12, 22, 0.62);
+  padding: 0.35rem 0.78rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.68);
+  backdrop-filter: blur(10px);
+}
+
+.hud-settings-btn:hover {
+  color: #64d2ff;
+  border-color: rgba(100,210,255,0.32);
+}
+
+.hud-social-letter {
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.settings-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+}
+
+.settings-panel {
+  width: min(420px, calc(100vw - 2rem));
+  border-radius: 16px;
+  border: 1px solid rgba(100,210,255,0.18);
+  background: rgba(5, 12, 22, 0.92);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  padding: 1.25rem;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.settings-eyebrow {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(100,210,255,0.58);
+}
+
+.settings-title {
+  margin: 0.2rem 0 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.settings-close {
+  all: unset;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.66);
+}
+
+.settings-row,
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.78);
+}
+
+.settings-row select,
+.settings-row input[type="range"] {
+  min-width: 140px;
+}
+
+.settings-row select {
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+}
+
+.settings-action {
+  width: 100%;
+  margin-top: 0.9rem;
+  border: 1px solid rgba(100,210,255,0.32);
+  border-radius: 12px;
+  background: rgba(100,210,255,0.1);
+  color: #64d2ff;
+  padding: 0.72rem 1rem;
+  font-weight: 800;
+}
+
 .hud-socials {
   display: flex; gap: 0.4rem; align-items: center;
   background: rgba(5, 12, 22, 0.62);
@@ -1070,9 +1196,27 @@ canvas {
   box-shadow: 0 0 10px rgba(100,180,255,0.3);
 }
 
+.world-tooltip {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+  background: rgba(3, 7, 12, 0.68);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.38), 0 0 24px rgba(125, 249, 255, 0.12);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  padding: 7px 11px;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+}
+
 /* ─── Mobile dock tap button ──────────────────────────────────────────────── */
 .mobile-dock-btn-wrap {
   bottom: 9rem; /* sits above the joystick */
+}
+
+.mobile-bike-btn-wrap {
+  bottom: 13.5rem;
 }
 
 .mobile-dock-btn {
@@ -1114,6 +1258,29 @@ canvas {
 }
 .mobile-panel-btn:active {
   background: rgba(167, 139, 250, 0.28);
+}
+
+.mobile-bike-btn {
+  background: rgba(114, 255, 183, 0.13);
+  border-color: rgba(114, 255, 183, 0.52);
+  animation-name: mobile-bike-pulse;
+}
+.mobile-bike-btn:active {
+  background: rgba(114, 255, 183, 0.28);
+}
+
+@keyframes mobile-bike-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 18px rgba(114, 255, 183, 0.25),
+      0 4px 22px rgba(0, 0, 0, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 36px rgba(114, 255, 183, 0.58),
+      0 0 12px rgba(114, 255, 183, 0.38),
+      0 4px 22px rgba(0, 0, 0, 0.45);
+  }
 }
 
 @keyframes mobile-panel-pulse {

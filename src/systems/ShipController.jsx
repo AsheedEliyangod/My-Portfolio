@@ -4,12 +4,11 @@ import * as THREE from "three";
 import { useGame } from "../state/GameContext.jsx";
 import { clampLength2D } from "../utils/math.js";
 import { ISLANDS } from "../world/Island.jsx";
+import { terrainHeight } from "../world/Island.jsx";
 import { resolveShipCollisions } from "../data/worldColliders.js";
 
-const DOCK_POINTS = ISLANDS.map((island) =>
-  new THREE.Vector3(island.worldPos.x, 0, island.worldPos.z + 14)
-);
-const DOCK_TRIGGER_RADIUS = 8.0;
+const DOCK_POINT = new THREE.Vector3(0, 0, 106.5);
+const DOCK_TRIGGER_RADIUS = 10.5;
 
 const MAX_THRUST = 6.0;
 const MAX_SPEED = 32.0;
@@ -131,19 +130,12 @@ export function ShipController() {
       velocity.current.multiplyScalar(0.12);
     }
 
-    let nearestIsland = null;
-    let nearestDistance = Infinity;
-    for (let index = 0; index < DOCK_POINTS.length; index += 1) {
-      const distance = state.position.distanceTo(DOCK_POINTS[index]);
-      if (distance < DOCK_TRIGGER_RADIUS && distance < nearestDistance) {
-        nearestDistance = distance;
-        nearestIsland = ISLANDS[index];
-      }
-    }
+    const nearestIsland = ISLANDS[0];
+    const nearestDistance = state.position.distanceTo(DOCK_POINT);
 
-    const isNear = nearestIsland !== null;
+    const isNear = nearestDistance < DOCK_TRIGGER_RADIUS;
     setNearDock(isNear);
-    setHint(isNear ? `Press E to dock at ${nearestIsland.label} island` : "Sail toward an island");
+    setHint(isNear ? "Press E to dock and enter the island" : "Sail toward the neon dock");
 
     const dockTriggered = isNear && (keys.KeyE || mobileDock.current.triggered);
     if (!activePanel && dockTriggered) {
@@ -153,12 +145,12 @@ export function ShipController() {
       rudder.current = 0;
       state.speed = 0;
       state.velocity = 0;
-      player.current.position.set(nearestIsland.worldPos.x, 0.52, nearestIsland.worldPos.z + 12);
+      player.current.position.set(0, terrainHeight(0, 94.0) + 0.72, 94.0);
       player.current.rotation = Math.PI;
       camera.current.yaw = Math.PI;
       camera.current.pitch = 0;
       setCurrentIsland(nearestIsland);
-      setHint(`Explore the ${nearestIsland.label} island`);
+      setHint("Explore the cinematic portfolio island");
       keys.KeyE = false;
       mobileDock.current.triggered = false;
     }
